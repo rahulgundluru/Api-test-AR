@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration and Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input, button {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        #userInfo {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Registration</h1>
+    <form id="registrationForm">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="tel" id="phoneNumber" placeholder="Phone Number" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <button type="submit">Register</button>
+    </form>
+
+    <h2>Get User Information</h2>
+    <form id="getUserForm">
+        <input type="text" id="userName" placeholder="Enter user name" required>
+        <button type="submit">Get User Info</button>
+    </form>
+
+    <div id="userInfo"></div>
+
+    <script>
+        const apiBaseUrl = 'http://localhost:3000/api';
+
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const email = document.getElementById('email').value;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, phoneNumber, email }),
+                });
+
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while registering the user');
+            }
+        });
+
+        document.getElementById('getUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userName = document.getElementById('userName').value;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/user/${encodeURIComponent(userName)}`);
+                const user = await response.json();
+
+                const userInfoDiv = document.getElementById('userInfo');
+                if (response.ok) {
+                    userInfoDiv.innerHTML = `
+                        <h3>User Information</h3>
+                        <p>Name: ${user.name}</p>
+                        <p>Phone Number: ${user.phoneNumber}</p>
+                        <p>Email: ${user.email}</p>
+                    `;
+                    userInfoDiv.style.display = 'block';
+                } else {
+                    userInfoDiv.innerHTML = `<p>${user.error}</p>`;
+                    userInfoDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while retrieving user information');
+            }
+        });
+    </script>
+</body>
+</html>
